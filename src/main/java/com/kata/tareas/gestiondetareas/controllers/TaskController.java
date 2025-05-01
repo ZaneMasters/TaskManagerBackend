@@ -29,8 +29,8 @@ public class TaskController {
 
     // Listar todas las tareas
     @GetMapping
-    public ResponseEntity<List<TaskDTO>> getAllTasks() {
-        List<TaskDTO> tasks = taskService.getAllTasks();
+    public ResponseEntity<List<TaskDTO>> getAllTasks(@RequestParam Long userId) {
+        List<TaskDTO> tasks = taskService.getTasksByUserId(userId);
         return new ResponseEntity<>(tasks, HttpStatus.OK);
     }
 

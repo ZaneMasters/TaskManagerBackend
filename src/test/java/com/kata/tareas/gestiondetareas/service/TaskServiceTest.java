@@ -33,8 +33,8 @@ class TaskServiceTest {
 
     @Test
     void testCreateTask() {
-        TaskDTO taskDTO = new TaskDTO(null, "Test Task", "Description", false);
-        Task savedTask = new Task(1L, "Test Task", "Description", false);
+        TaskDTO taskDTO = new TaskDTO(null, "Test Task", "Description", false, null);
+        Task savedTask = new Task(1L, "Test Task", "Description", false, null);
 
         when(taskRepository.save(any(Task.class))).thenReturn(savedTask);
 
@@ -47,12 +47,12 @@ class TaskServiceTest {
 
     @Test
     void testGetAllTasks() {
-        Task task1 = new Task(1L, "Task 1", "Description 1", false);
-        Task task2 = new Task(2L, "Task 2", "Description 2", true);
+        Task task1 = new Task(1L, "Task 1", "Description 1", false, null);
+        Task task2 = new Task(2L, "Task 2", "Description 2", true, null);
 
         when(taskRepository.findAll()).thenReturn(List.of(task1, task2));
 
-        List<TaskDTO> tasks = taskService.getAllTasks();
+        List<TaskDTO> tasks = taskService.getTasksByUserId(task1.getUser().getId());
 
         assertEquals(2, tasks.size());
         assertEquals("Task 1", tasks.get(0).getTitle());

@@ -18,6 +18,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -35,15 +36,10 @@ class TaskControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-    }
-
     @Test
     void testCreateTask() throws Exception {
-        TaskDTO taskDTO = new TaskDTO(null, "Test Task", "Description", false);
-        TaskDTO createdTask = new TaskDTO(1L, "Test Task", "Description", false);
+        TaskDTO taskDTO = new TaskDTO(null, "Test Task", "Description", false, 10L); // userId añadido
+        TaskDTO createdTask = new TaskDTO(1L, "Test Task", "Description", false, 10L);
 
         when(taskService.createTask(any(TaskDTO.class))).thenReturn(createdTask);
 
@@ -52,15 +48,16 @@ class TaskControllerTest {
                 .content(objectMapper.writeValueAsString(taskDTO)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.title").value("Test Task"));
+                .andExpect(jsonPath("$.title").value("Test Task"))
+                .andExpect(jsonPath("$.userId").value(10));
     }
 
     @Test
     void testGetAllTasks() throws Exception {
-        TaskDTO task1 = new TaskDTO(1L, "Task 1", "Description 1", false);
-        TaskDTO task2 = new TaskDTO(2L, "Task 2", "Description 2", true);
+        TaskDTO task1 = new TaskDTO(1L, "Task 1", "Description 1", false, 10L);
+        TaskDTO task2 = new TaskDTO(2L, "Task 2", "Description 2", true, 10L);
 
-        when(taskService.getAllTasks()).thenReturn(List.of(task1, task2));
+        when(taskService.getTasksByUserId(task1.getUserId())).thenReturn(List.of(task1, task2));
 
         mockMvc.perform(get("/api/tasks"))
                 .andExpect(status().isOk())
@@ -72,6 +69,9 @@ class TaskControllerTest {
     @Test
     void testDeleteTask_Success() throws Exception {
         Long taskId = 1L;
+
+        // No exception expected
+        doNothing().when(taskService).deleteTaskById(taskId);
 
         mockMvc.perform(delete("/api/tasks/{id}", taskId))
                 .andExpect(status().isNoContent());
@@ -88,4 +88,5 @@ class TaskControllerTest {
                 .andExpect(content().string("Task with ID 1 not found."));
     }
 }
+
 

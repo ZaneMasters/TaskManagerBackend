@@ -57,12 +57,18 @@ public class AuthController {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword())
             );
-
+    
             String token = jwtUtil.generateToken(authRequest.getUsername());
-
-            return ResponseEntity.ok(new AuthenticationResponse(token));
+    
+            User user = userRepository.findByUsername(authRequest.getUsername()).orElse(null);
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+    
+            return ResponseEntity.ok(new AuthenticationResponse(token, user.getId()));
         } catch (AuthenticationException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
     }
+    
 }
